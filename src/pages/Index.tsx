@@ -13,6 +13,10 @@ const Index = () => {
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [magicalWord, setMagicalWord] = useState('');
   const [showAnswers, setShowAnswers] = useState(false);
+  const [showAdmin, setShowAdmin] = useState(false);
+  const [adminPassword, setAdminPassword] = useState('');
+  const [isAdminAuth, setIsAdminAuth] = useState(false);
+  const [allResults, setAllResults] = useState<any[]>([]);
 
   const questions = [
     {
@@ -80,6 +84,43 @@ const Index = () => {
     }
   };
 
+  const saveTestResult = (userAnswers: string[], resultType: string) => {
+    const testResult = {
+      id: Date.now().toString(),
+      timestamp: new Date().toLocaleString('ru-RU'),
+      answers: userAnswers,
+      result: resultType,
+      artifact: artifacts[resultType as keyof typeof artifacts]
+    };
+    
+    const existingResults = JSON.parse(localStorage.getItem('quizResults') || '[]');
+    existingResults.push(testResult);
+    localStorage.setItem('quizResults', JSON.stringify(existingResults));
+  };
+
+  const loadAllResults = () => {
+    const results = JSON.parse(localStorage.getItem('quizResults') || '[]');
+    setAllResults(results);
+  };
+
+  const handleAdminLogin = () => {
+    if (adminPassword === 'arina2025') {
+      setIsAdminAuth(true);
+      setShowAdmin(true);
+      loadAllResults();
+    } else {
+      alert('Неверный пароль!');
+    }
+  };
+
+  const clearAllData = () => {
+    if (confirm('Удалить все данные? Это действие нельзя отменить.')) {
+      localStorage.removeItem('quizResults');
+      setAllResults([]);
+      alert('Все данные удалены');
+    }
+  };
+
   const handleAnswer = (value: string) => {
     const newAnswers = [...answers, value];
     setAnswers(newAnswers);
@@ -98,6 +139,9 @@ const Index = () => {
       const result = Object.keys(counts).reduce((a, b) => 
         counts[a] > counts[b] ? a : b
       );
+      
+      // Сохраняем результат в localStorage
+      saveTestResult(allAnswers, result);
       
       setCurrentStep(result);
     }
@@ -181,6 +225,17 @@ const Index = () => {
               Начать магическое путешествие
               <Icon name="ArrowRight" size={20} className="ml-2" />
             </Button>
+            
+            {/* Скрытая кнопка админки */}
+            <div className="mt-8">
+              <button 
+                onClick={() => setShowAdmin(true)}
+                className="text-white/20 hover:text-white/40 text-xs transition-colors"
+                style={{opacity: 0.2}}
+              >
+                •••
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -352,6 +407,94 @@ const Index = () => {
           </Card>
         </div>
       </div>
+      
+      {/* Админ-панель */}
+      {showAdmin && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+          <Card className="bg-white max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between">
+                <span>Админ-панель</span>
+                <Button 
+                  onClick={() => {
+                    setShowAdmin(false);
+                    setIsAdminAuth(false);
+                    setAdminPassword('');
+                  }}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Icon name="X" size={16} />
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {!isAdminAuth ? (
+                <div className="space-y-4">
+                  <Input
+                    type="password"
+                    placeholder="Введите пароль админа"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleAdminLogin()}
+                  />
+                  <Button onClick={handleAdminLogin} className="w-full">
+                    Войти
+                  </Button>
+                </div>
+              ) : (
+                <div>
+                  <div className="flex justify-between items-center mb-6">
+                    <h3 className="text-lg font-semibold">
+                      Всего прохождений: {allResults.length}
+                    </h3>
+                    <Button onClick={clearAllData} variant="destructive" size="sm">
+                      <Icon name="Trash2" size={16} className="mr-2" />
+                      Очистить все
+                    </Button>
+                  </div>
+                  
+                  <div className="space-y-4">
+                    {allResults.map((result, index) => (
+                      <Card key={result.id} className="border">
+                        <CardHeader className="pb-2">
+                          <div className="flex justify-between items-center">
+                            <span className="font-semibold">
+                              #{allResults.length - index} - {result.artifact.name}
+                            </span>
+                            <span className="text-sm text-gray-500">
+                              {result.timestamp}
+                            </span>
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="space-y-2 text-sm">
+                            {result.answers.map((answer: string, qIndex: number) => (
+                              <div key={qIndex}>
+                                <strong>{questions[qIndex]?.question}</strong>
+                                <br />
+                                <span className="text-gray-600 ml-2">
+                                  ➜ {getQuestionText(qIndex, answer)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                    
+                    {allResults.length === 0 && (
+                      <div className="text-center text-gray-500 py-8">
+                        Пока никто не проходил тест
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      )}
     </div>
   );
 };
