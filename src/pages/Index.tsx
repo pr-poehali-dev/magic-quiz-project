@@ -228,13 +228,14 @@ const Index = () => {
             
             {/* Скрытая кнопка админки */}
             <div className="mt-8">
-              <button 
+              <Button 
                 onClick={() => setShowAdmin(true)}
-                className="text-white/20 hover:text-white/40 text-xs transition-colors"
-                style={{opacity: 0.2}}
+                variant="ghost"
+                size="sm"
+                className="text-white/40 hover:text-white/70 text-lg transition-colors hover:bg-white/10 px-4 py-2"
               >
                 •••
-              </button>
+              </Button>
             </div>
           </div>
         </div>
