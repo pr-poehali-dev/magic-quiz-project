@@ -3,12 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
 import Icon from '@/components/ui/icon';
+import MagicalParticles from '@/components/MagicalParticles';
 
 const Index = () => {
   const [currentStep, setCurrentStep] = useState('intro');
   const [answers, setAnswers] = useState<string[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [magicalWord, setMagicalWord] = useState('');
+  const [showAnswers, setShowAnswers] = useState(false);
 
   const questions = [
     {
@@ -34,6 +38,27 @@ const Index = () => {
         { text: "Ключ в бесконечную библиотеку", value: "wisdom" },
         { text: "Ароматные эликсиры красоты", value: "beauty" }
       ]
+    },
+    {
+      question: "Какой магический навык ты бы хотела освоить?",
+      options: [
+        { text: "Искусство запечатлевать моменты в вечности", value: "time" },
+        { text: "Умение понимать язык книг, написанных тысячелетия назад", value: "ancient" },
+        { text: "Способность создавать эликсиры, дарящие невесомость и покой", value: "alchemy" }
+      ]
+    },
+    {
+      question: "Напиши одно слово, которое ассоциируется у тебя с волшебством:",
+      type: "text",
+      placeholder: "Например: книги, уют, воспоминания..."
+    },
+    {
+      question: "Какой волшебный предмет ты бы подарила близкому другу?",
+      options: [
+        { text: "Что-то, сделанное своими руками", value: "handmade" },
+        { text: "То, что поможет осуществить мечту", value: "dream" },
+        { text: "Что-то, что подарит мгновения блаженства", value: "bliss" }
+      ]
     }
   ];
 
@@ -44,7 +69,7 @@ const Index = () => {
       image: "/img/8fe8f1bf-949f-4535-ad14-bb83e705a6e7.jpg"
     },
     crystal: {
-      name: "Кристалл Пророчества",
+      name: "Кристалл Пророчества", 
       description: "Ты видишь то, что скрыто от других. Твоя интуиция — твоя сверхсила!",
       image: "/img/9270d4e7-c9d6-4e0c-9d37-146a80b7ee2a.jpg"
     },
@@ -63,7 +88,8 @@ const Index = () => {
       setCurrentQuestion(currentQuestion + 1);
     } else {
       // Определяем результат
-      const counts = newAnswers.reduce((acc, answer) => {
+      const allAnswers = [...newAnswers, magicalWord];
+      const counts = allAnswers.reduce((acc, answer) => {
         const category = getCategory(answer);
         acc[category] = (acc[category] || 0) + 1;
         return acc;
@@ -77,9 +103,22 @@ const Index = () => {
     }
   };
 
+  const handleTextAnswer = () => {
+    if (magicalWord.trim()) {
+      handleAnswer(magicalWord);
+    }
+  };
+
   const getCategory = (answer: string) => {
-    if (['scroll', 'knowledge', 'wisdom'].includes(answer)) return 'scroll';
-    if (['crystal', 'craft', 'connection'].includes(answer)) return 'crystal';
+    // Анализируем текстовые ответы
+    const lowerAnswer = answer.toLowerCase();
+    if (['книг', 'знани', 'мудрост', 'учени', 'чтени'].some(word => lowerAnswer.includes(word))) return 'scroll';
+    if (['воспомина', 'уют', 'тепл', 'дом', 'семь', 'любов'].some(word => lowerAnswer.includes(word))) return 'vessel';
+    if (['магия', 'звезд', 'кристалл', 'свет', 'энерги'].some(word => lowerAnswer.includes(word))) return 'crystal';
+    
+    // Стандартные категории
+    if (['scroll', 'knowledge', 'wisdom', 'ancient'].includes(answer)) return 'scroll';
+    if (['crystal', 'craft', 'connection', 'time'].includes(answer)) return 'crystal';
     return 'vessel';
   };
 
@@ -87,12 +126,25 @@ const Index = () => {
     setCurrentStep('intro');
     setAnswers([]);
     setCurrentQuestion(0);
+    setMagicalWord('');
+    setShowAnswers(false);
+  };
+
+  const getQuestionText = (qIndex: number, answer: string) => {
+    if (qIndex === 4) return `"${answer}"`; // Текстовый ответ
+    const question = questions[qIndex];
+    if (question.options) {
+      const option = question.options.find(opt => opt.value === answer);
+      return option ? option.text : answer;
+    }
+    return answer;
   };
 
   if (currentStep === 'intro') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-300 to-purple-600 flex items-center justify-center p-4">
-        <div className="max-w-2xl mx-auto text-center">
+      <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-300 to-purple-600 flex items-center justify-center p-4 relative overflow-hidden">
+        <MagicalParticles />
+        <div className="max-w-2xl mx-auto text-center relative z-10">
           <div className="animate-fade-in">
             <div className="mb-8">
               <Icon name="Sparkles" size={64} className="mx-auto text-white mb-4" />
@@ -106,13 +158,13 @@ const Index = () => {
               <CardContent className="p-8">
                 <p className="text-xl text-white/90 mb-6 leading-relaxed">
                   Пройди мини-тест, чтобы узнать, какой магический предмет подходит твоей душе!
-                  ✨ Три вопроса раскроют твою внутреннюю сущность
+                  ✨ Шесть вопросов раскроют твою внутреннюю сущность
                 </p>
                 
                 <div className="flex items-center justify-center space-x-6 text-white/80 mb-6">
                   <div className="flex items-center">
                     <Icon name="Clock" size={20} className="mr-2" />
-                    <span>3 минуты</span>
+                    <span>5 минут</span>
                   </div>
                   <div className="flex items-center">
                     <Icon name="Heart" size={20} className="mr-2" />
@@ -136,9 +188,11 @@ const Index = () => {
   }
 
   if (currentStep === 'quiz') {
+    const currentQ = questions[currentQuestion];
     return (
-      <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-300 to-purple-600 flex items-center justify-center p-4">
-        <div className="max-w-2xl mx-auto">
+      <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-300 to-purple-600 flex items-center justify-center p-4 relative overflow-hidden">
+        <MagicalParticles />
+        <div className="max-w-2xl mx-auto relative z-10">
           <div className="text-center mb-8">
             <div className="flex justify-center space-x-2 mb-4">
               {questions.map((_, index) => (
@@ -156,20 +210,40 @@ const Index = () => {
           <Card className="bg-white/20 backdrop-blur-sm border-white/30 animate-fade-in">
             <CardHeader>
               <CardTitle className="text-2xl text-white text-center font-[Caveat]">
-                {questions[currentQuestion].question}
+                {currentQ.question}
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <RadioGroup onValueChange={handleAnswer} className="space-y-4">
-                {questions[currentQuestion].options.map((option, index) => (
-                  <div key={index} className="flex items-center space-x-3 p-4 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
-                    <RadioGroupItem value={option.value} id={option.value} className="border-white text-white" />
-                    <Label htmlFor={option.value} className="text-white text-lg cursor-pointer flex-1">
-                      {option.text}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
+              {currentQ.type === 'text' ? (
+                <div className="space-y-4">
+                  <Input
+                    placeholder={currentQ.placeholder}
+                    value={magicalWord}
+                    onChange={(e) => setMagicalWord(e.target.value)}
+                    className="bg-white/20 border-white/30 text-white placeholder-white/60 text-lg p-4"
+                    onKeyDown={(e) => e.key === 'Enter' && handleTextAnswer()}
+                  />
+                  <Button
+                    onClick={handleTextAnswer}
+                    disabled={!magicalWord.trim()}
+                    className="w-full bg-white text-purple-600 hover:bg-purple-50 disabled:opacity-50"
+                  >
+                    Продолжить
+                    <Icon name="ArrowRight" size={20} className="ml-2" />
+                  </Button>
+                </div>
+              ) : (
+                <RadioGroup onValueChange={handleAnswer} className="space-y-4">
+                  {currentQ.options?.map((option, index) => (
+                    <div key={index} className="flex items-center space-x-3 p-4 rounded-lg bg-white/10 hover:bg-white/20 transition-colors">
+                      <RadioGroupItem value={option.value} id={option.value} className="border-white text-white" />
+                      <Label htmlFor={option.value} className="text-white text-lg cursor-pointer flex-1">
+                        {option.text}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -180,8 +254,9 @@ const Index = () => {
   const artifact = artifacts[currentStep as keyof typeof artifacts];
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-300 to-purple-600 flex items-center justify-center p-4">
-      <div className="max-w-2xl mx-auto text-center">
+    <div className="min-h-screen bg-gradient-to-br from-purple-400 via-pink-300 to-purple-600 flex items-center justify-center p-4 relative overflow-hidden">
+      <MagicalParticles />
+      <div className="max-w-2xl mx-auto text-center relative z-10">
         <div className="animate-scale-in">
           <div className="mb-6">
             <Icon name="Crown" size={64} className="mx-auto text-white mb-4" />
@@ -207,7 +282,7 @@ const Index = () => {
                 {artifact.description}
               </p>
               
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <div className="flex flex-col sm:flex-row gap-4 justify-center mb-6">
                 <Button 
                   onClick={resetQuiz}
                   className="bg-white text-purple-600 hover:bg-purple-50 px-6 py-3 rounded-full font-semibold hover-scale"
@@ -227,7 +302,52 @@ const Index = () => {
                   <Icon name="Share2" size={20} className="mr-2" />
                   Поделиться
                 </Button>
+                
+                <Button 
+                  onClick={() => setShowAnswers(!showAnswers)}
+                  variant="outline"
+                  className="border-white text-white hover:bg-white hover:text-purple-600 px-6 py-3 rounded-full font-semibold hover-scale"
+                >
+                  <Icon name="Eye" size={20} className="mr-2" />
+                  {showAnswers ? 'Скрыть' : 'Показать'} ответы
+                </Button>
               </div>
+              
+              {showAnswers && (
+                <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-left">
+                  <CardHeader>
+                    <CardTitle className="text-white text-lg font-[Caveat]">
+                      Ответы Арины:
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {answers.map((answer, index) => (
+                        <div key={index} className="text-white/90">
+                          <span className="font-semibold text-white">
+                            {index + 1}. {questions[index]?.question}
+                          </span>
+                          <br />
+                          <span className="ml-4 text-white/80">
+                            ➜ {getQuestionText(index, answer)}
+                          </span>
+                        </div>
+                      ))}
+                      {magicalWord && (
+                        <div className="text-white/90">
+                          <span className="font-semibold text-white">
+                            5. Магическое слово:
+                          </span>
+                          <br />
+                          <span className="ml-4 text-white/80">
+                            ➜ "{magicalWord}"
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
             </CardContent>
           </Card>
         </div>
