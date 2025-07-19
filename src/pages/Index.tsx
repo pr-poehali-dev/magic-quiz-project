@@ -370,7 +370,7 @@ const Index = () => {
                 <Card className="bg-white/10 backdrop-blur-sm border-white/20 text-left">
                   <CardHeader>
                     <CardTitle className="text-white text-lg font-[Caveat]">
-                      Ответы Арины:
+                      Твои ответы:
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
@@ -401,6 +401,15 @@ const Index = () => {
                   </CardContent>
                 </Card>
               )}
+              
+              {/* Скрытый доступ к админке для тебя */}
+              <div 
+                className="mt-4"
+                onDoubleClick={() => setShowAdmin(true)}
+                style={{height: '20px', width: '100%'}}
+              >
+                {/* Невидимая область для двойного клика */}
+              </div>
             </CardContent>
           </Card>
         </div>
