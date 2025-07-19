@@ -226,16 +226,13 @@ const Index = () => {
               <Icon name="ArrowRight" size={20} className="ml-2" />
             </Button>
             
-            {/* Скрытая кнопка админки */}
-            <div className="mt-8">
-              <Button 
-                onClick={() => setShowAdmin(true)}
-                variant="ghost"
-                size="sm"
-                className="text-white/40 hover:text-white/70 text-lg transition-colors hover:bg-white/10 px-4 py-2"
-              >
-                •••
-              </Button>
+            {/* Полностью скрытая кнопка админки - двойной клик по логотипу */}
+            <div 
+              className="mt-8 cursor-default"
+              onDoubleClick={() => setShowAdmin(true)}
+              style={{height: '20px'}}
+            >
+              {/* Невидимая область для двойного клика */}
             </div>
           </div>
         </div>
